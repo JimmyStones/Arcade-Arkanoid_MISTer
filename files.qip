@@ -11,6 +11,7 @@ set_global_assignment -name VHDL_FILE rtl/cpu/T80/T80_Reg.vhd
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/ram_rom/rom_loader.sv
 set_global_assignment -name VHDL_FILE rtl/ram_rom/spram.vhd
 set_global_assignment -name VHDL_FILE rtl/ram_rom/spram_en.vhd
+set_global_assignment -name VHDL_FILE rtl/ram_rom/dpram_en.vhd
 set_global_assignment -name VHDL_FILE rtl/ram_rom/dpram_dc.vhd
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/custom/mb112s146.sv
 set_global_assignment -name VHDL_FILE rtl/sound/ym2149.vhd
@@ -40,3 +41,4 @@ set_global_assignment -name SYSTEMVERILOG_FILE rtl/logic/ls374.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/logic/ls393.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/logic/ls669.sv
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/logic/cmos_4584.sv
+set_global_assignment -name VERILOG_FILE rtl/hiscore.v

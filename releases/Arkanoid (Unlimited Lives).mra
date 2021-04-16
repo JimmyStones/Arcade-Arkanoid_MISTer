@@ -43,4 +43,11 @@
 		<patch offset="0xBFFF">92</patch>
 		<patch offset="0x9571">00</patch> <!-- unlimited lives /-->
 	</rom>
+	<rom index="3" md5="none">
+		<part>
+		00 00 00 00 00 FF 00 02 00 02 00 01 00 FF 00 00
+		00 00 EF 79 00 23 00 52
+		00 00 C4 DF 00 03 00 00
+		</part>
+	</rom>
 </misterromdescription>

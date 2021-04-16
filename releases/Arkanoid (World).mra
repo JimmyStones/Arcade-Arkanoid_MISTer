@@ -43,4 +43,12 @@
 		<patch offset="0xBDA5">ED</patch>
 		<patch offset="0xBFFF">33</patch>
 	</rom>
+	<rom index="3" md5="none">
+		<part>
+		00 00 00 00 00 FF 00 02 00 02 00 01 00 FF 00 00
+		00 00 EF 79 00 23 00 52
+		00 00 C4 DF 00 03 00 00
+		</part>
+	</rom>
+	<nvram index="4" size="38"/>
 </misterromdescription>

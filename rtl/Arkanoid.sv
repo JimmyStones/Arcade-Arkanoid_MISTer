@@ -47,7 +47,15 @@ module Arkanoid
 	input         [24:0] ioctl_addr,
 	input                ioctl_download,
 	input          [7:0] ioctl_data,
-	input                ioctl_wr
+	input                ioctl_wr,
+
+	input                pause,
+
+	input         [15:0] hs_address,
+	input          [7:0] hs_data_in,
+	output         [7:0] hs_data_out,
+	input                hs_write
+
 );
 
 //Z80 signals
@@ -135,6 +143,15 @@ wire spinner_sel, spin_cnt_n_en;
 wire [3:0] spin_cnt_h, spin_cnt_l;
 wire [4:0] bg;
 wire [7:0] sr, h_pos, h_pos_mux, bg_data, scr, obj, spinner_data;
+
+// Hiscore mux
+wire [7:0] hs_data_out_wram;
+wire [7:0] hs_data_out_sram;
+wire       hs_cs_wram;
+wire       hs_cs_sram;
+assign hs_cs_wram = hs_address[15:12] == 4'b1100;
+assign hs_cs_sram = hs_address[15:12] == 4'b1110;
+assign hs_data_out = hs_cs_wram ? hs_data_out_wram : hs_data_out_sram;
 
 //Reverse DIP switch order
 assign dipsw_in = {dip_sw[0], dip_sw[1], dip_sw[2], dip_sw[3], dip_sw[4], dip_sw[5], dip_sw[6], dip_sw[7]};
@@ -328,7 +345,7 @@ T80s IC12
 (
 	.RESET_n(z80_n_reset),
 	.CLK(n_clk_6m),
-	.WAIT_n(z80_n_wait),
+	.WAIT_n(z80_n_wait && ~pause),
 	.INT_n(z80_n_int),
 	.NMI_n(1'b1),
 	.BUSRQ_n(1'b1),
@@ -354,13 +371,20 @@ ls273 IC13
 //IC14 is an MC68705 microcontroller - currently unimplemented
 
 //Z80 work RAM
-spram #(8, 11) IC15
+dpram_dc #(.widthad_a(11),.width_a(8)) IC15
 (
-	.clk(n_clk_6m),
-	.we(~z80_n_wr & ~z80_ram_n_ce),
-	.addr(z80_A[10:0]),
-	.data(z80_Dout),
-	.q(z80_ram_D)
+	.clock_a(n_clk_6m),
+	.wren_a(~z80_n_wr & ~z80_ram_n_ce),
+	.address_a(z80_A[10:0]),
+	.data_a(z80_Dout),
+	.q_a(z80_ram_D),
+
+	.clock_b(clk_12m),
+	.wren_b(hs_write & hs_cs_wram),
+	.byteena_b(hs_cs_wram),
+	.address_b(hs_address),
+	.data_b(hs_data_in),
+	.q_b(hs_data_out_wram)
 );
 
 //Secondary game ROM
@@ -432,10 +456,10 @@ ls04 IC20
 ls393 IC21
 (
 	.clk1(n_vblank),
-	.clr1(watchdog_clr),
+	.clr1(watchdog_clr || pause),
 	.q1({watchdog_clk, 3'b000}), //q1[2:0] unused
 	.clk2(watchdog_clk),
-	.clr2(watchdog_clr),
+	.clr2(watchdog_clr || pause),
 	.q2({n_watchdog, 3'b000}) //q2[2:0] unused
 );
 
@@ -773,14 +797,21 @@ ls298 IC50
 );
 
 //Sprite RAM
-spram_en #(8, 11) IC51
+dpram_en #(8,11) IC51
 (
-	.clk(clk_12m),
-	.we(clk_6m),
-	.re(~spr_ram_n_rd),
-	.addr({2'b00, spr_ram_A}),
-	.data(spr_ram_Din),
-	.q(spr_ram_Dout)
+	.clk_a(clk_12m),
+	.we_a(clk_6m),
+	.re_a(~spr_ram_n_rd),
+	.addr_a({2'b00, spr_ram_A}),
+	.data_a(spr_ram_Din),
+	.q_a(spr_ram_Dout),
+
+	.clk_b(clk_12m),
+	.we_b(hs_write & hs_cs_sram),
+	.re_b(hs_cs_sram),
+	.addr_b(hs_address),
+	.data_b(hs_data_in),
+	.q_b(hs_data_out_sram)
 );
 
 //Generate sprite RAM addresses (A0 - A3)
